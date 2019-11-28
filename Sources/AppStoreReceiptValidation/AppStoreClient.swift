@@ -34,7 +34,9 @@ public class AppStoreClient {
     try self.httpClient.syncShutdown()
   }
   
-  public func validateAppStoreReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil) -> EventLoopFuture<Receipt> {
+  public func validateAppStoreReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil)
+    -> EventLoopFuture<Receipt>
+  {
     let request = Request(
       receiptData: receipt,
       password: secret,

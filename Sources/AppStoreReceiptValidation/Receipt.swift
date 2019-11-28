@@ -221,7 +221,8 @@ extension AppStoreClient {
     /// The current price consent status for a subscription price increase.
     ///
     /// - 1 - Customer has agreed to the price increase. Subscription will renew at the higher price.
-    /// - 0 - Customer has not taken action regarding the increased price. Subscription expires if the customer takes no action before the renewal date.
+    /// - 0 - Customer has not taken action regarding the increased price. Subscription expires if the customer
+    ///      takes no action before the renewal date.
     ///
     /// This key is only present for auto-renewable subscription receipts if the subscription price was
     /// increased without keeping the existing price for active subscribers. You can use this value to
