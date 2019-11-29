@@ -28,7 +28,7 @@ jobs:
     - name: Test
       run: swift test --enable-code-coverage --enable-test-discovery
     - name: Convert coverage files
-      run: llvm-cov export -format="lcov" .build/debug/swift-aws-lambdaPackageTests.xctest -instr-profile .build/debug/codecov/default.profdata > info.lcov
+      run: llvm-cov export -format="lcov" .build/debug/swift-app-store-receipt-validationPackageTests.xctest -instr-profile .build/debug/codecov/default.profdata > info.lcov
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v1.0.3
       with:
@@ -52,7 +52,7 @@ jobs:
     - name: Xcode Tests
       run: |
         swift package generate-xcodeproj
-        xcodebuild -quiet -parallel-testing-enabled YES -scheme swift-aws-lambda-Package -enableCodeCoverage YES build test
+        xcodebuild -quiet -parallel-testing-enabled YES -scheme swift-app-store-receipt-validation-Package -enableCodeCoverage YES build test
     - name: Codecov
-      run: bash <(curl -s https://codecov.io/bash) -J 'AWSLambda' -t ${{secrets.CODECOV_TOKEN}}
+      run: bash <(curl -s https://codecov.io/bash) -J 'AppStoreReceiptValidation' -t ${{secrets.CODECOV_TOKEN}}
 
