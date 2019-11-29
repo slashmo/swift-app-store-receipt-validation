@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "AppStoreReceiptValidation",
+  name: "app-store-receipt-validation",
   platforms: [
       .macOS(.v10_12),
       .iOS(.v10),
