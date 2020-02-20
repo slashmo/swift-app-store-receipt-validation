@@ -3,17 +3,16 @@ import NIO
 import NIOFoundationCompat
 import AsyncHTTPClient
 
-public class AppStoreClient {
+public struct AppStoreClient {
   
   let httpClient: HTTPClient
   let secret    : String?
   let allocator = ByteBufferAllocator()
   let encoder   = JSONEncoder()
-  let decoder   = JSONDecoder() // TBD: 
+  let decoder   = JSONDecoder() 
   
-  public init(eventLoopGroup: EventLoopGroup, secret: String?) {
-    
-    self.httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoopGroup))
+  public init(httpClient: HTTPClient, secret: String?) {
+    self.httpClient = httpClient
     self.secret     = secret
     
     self.decoder.dateDecodingStrategy = .custom { (decoder) -> Date in
@@ -30,11 +29,7 @@ public class AppStoreClient {
     }
   }
   
-  public func syncShutdown() throws {
-    try self.httpClient.syncShutdown()
-  }
-  
-  public func validateAppStoreReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil)
+  public func validateReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil)
     -> EventLoopFuture<Receipt>
   {
     let request = Request(
