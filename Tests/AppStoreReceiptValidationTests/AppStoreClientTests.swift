@@ -1,11 +1,7 @@
+@testable import AppStoreReceiptValidation
 import Foundation
 import XCTest
-@testable import AppStoreReceiptValidation
 
 class AppStoreClientTests: XCTestCase {
-
-  func testNothing() {
-    
-  }
-  
+  func testNothing() {}
 }

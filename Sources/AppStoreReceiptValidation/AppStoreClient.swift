@@ -1,34 +1,34 @@
-import Foundation
-import NIO
-import NIOFoundationCompat
 import AsyncHTTPClient
+import NIO
+
+public protocol AppStoreClientRequestEncoder {
+  func encode<T: Encodable>(_ value: T) throws -> ByteBuffer
+}
+
+public protocol AppStoreClientResponseDecoder {
+  func decode<T: Decodable>(_ type: T.Type, from: ByteBuffer) throws -> T
+}
 
 public struct AppStoreClient {
   
   let httpClient: HTTPClient
-  let secret    : String?
+  let secret: String?
   let allocator = ByteBufferAllocator()
-  let encoder   = JSONEncoder()
-  let decoder   = JSONDecoder() 
-  
-  public init(httpClient: HTTPClient, secret: String?) {
+  let encoder: AppStoreClientRequestEncoder
+  let decoder: AppStoreClientResponseDecoder
+
+  public init(
+    httpClient: HTTPClient,
+    encoder: AppStoreClientRequestEncoder,
+    decoder: AppStoreClientResponseDecoder,
+    secret: String?)
+  {
     self.httpClient = httpClient
+    self.encoder    = encoder
+    self.decoder    = decoder
     self.secret     = secret
-    
-    self.decoder.dateDecodingStrategy = .custom { (decoder) -> Date in
-      let container = try decoder.singleValueContainer()
-      let string    = try container.decode(String.self)
-      
-      guard let timeIntervalSince1970inMs = Double(string) else {
-        throw DecodingError.dataCorruptedError(
-          in: container,
-          debugDescription: "Expected to have a TimeInterval in ms within the string to decode a date.")
-      }
-      
-      return Date(timeIntervalSince1970: timeIntervalSince1970inMs / 1000)
-    }
   }
-  
+
   public func validateReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil)
     -> EventLoopFuture<Receipt>
   {
@@ -36,8 +36,8 @@ public struct AppStoreClient {
       receiptData: receipt,
       password: secret,
       excludeOldTransactions: excludeOldTransactions)
-    
-    return self.executeRequest(request, in: .production)
+
+    return executeRequest(request, in: .production)
       .flatMapError { (error) -> EventLoopFuture<AppStoreClient.Response> in
         switch error {
         case Error.receiptIsFromTestEnvironmentButWasSentToProductionEnvironment:
@@ -48,24 +48,23 @@ public struct AppStoreClient {
         }
       }
       .map { (response) -> (Receipt) in
-        return response.receipt
+        response.receipt
       }
   }
-  
-  private func executeRequest(
-    _ request: Request,
-    in environment: Environment) -> EventLoopFuture<Response>
+
+  private func executeRequest(_ request: Request, in environment: Environment)
+    -> EventLoopFuture<Response>
   {
-    let buffer = try! encoder.encodeAsByteBuffer(request, allocator: allocator)
+    let buffer = try! encoder.encode(request)
     
-    return self.httpClient.post(url: environment.url, body: .byteBuffer(buffer), deadline: NIODeadline.now() + .seconds(5))
+    return httpClient.post(url: environment.url, body: .byteBuffer(buffer), deadline: NIODeadline.now() + .seconds(5))
       .flatMapThrowing { (resp) throws -> (Response) in
         let status = try self.decoder.decode(Status.self, from: resp.body!)
-        
+
         if status.status != 0 {
           throw Error(statusCode: status.status)
         }
-        
+
         return try self.decoder.decode(Response.self, from: resp.body!)
       }
   }
