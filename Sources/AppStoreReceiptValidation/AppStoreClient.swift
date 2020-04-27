@@ -2,7 +2,7 @@ import AsyncHTTPClient
 import NIO
 
 public protocol AppStoreClientRequestEncoder {
-  func encode<T: Encodable>(_ value: T) throws -> ByteBuffer
+  func encode<T: Encodable>(_ value: T, using allocator: ByteBufferAllocator) throws -> ByteBuffer
 }
 
 public protocol AppStoreClientResponseDecoder {
@@ -55,7 +55,7 @@ public struct AppStoreClient {
   private func executeRequest(_ request: Request, in environment: Environment)
     -> EventLoopFuture<Response>
   {
-    let buffer = try! encoder.encode(request)
+    let buffer = try! encoder.encode(request, using: self.allocator)
     
     return httpClient.post(url: environment.url, body: .byteBuffer(buffer), deadline: NIODeadline.now() + .seconds(5))
       .flatMapThrowing { (resp) throws -> (Response) in
