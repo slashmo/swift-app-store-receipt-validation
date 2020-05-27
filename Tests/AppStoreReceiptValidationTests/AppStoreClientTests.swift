@@ -3,5 +3,5 @@ import Foundation
 import XCTest
 
 class AppStoreClientTests: XCTestCase {
-  func testNothing() {}
+    func testNothing() {}
 }
