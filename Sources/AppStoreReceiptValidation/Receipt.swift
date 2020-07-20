@@ -1,20 +1,6 @@
 import struct Foundation.Date
 
-extension AppStoreClient {
-    enum Environment: String, Codable {
-        case sandbox = "Sandbox"
-        case production = "Production"
-
-        var url: String {
-            switch self {
-            case .sandbox:
-                return "https://sandbox.itunes.apple.com/verifyReceipt"
-            case .production:
-                return "https://buy.itunes.apple.com/verifyReceipt"
-            }
-        }
-    }
-
+extension AppStore {
     public enum Error: Swift.Error {
         /// The App Store could not read the JSON object you provided.
         case invalidJSONObject
@@ -324,5 +310,76 @@ extension AppStoreClient {
     public enum CancellationReason: String, Codable {
         case actualOrPercivedIssueWithinTheApp = "1"
         case otherReason = "0"
+    }
+}
+
+extension AppStore.Receipt {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.bundleId = try container.decode(String.self, forKey: .bundleId)
+        self.applicationVersion = try container.decode(String.self, forKey: .applicationVersion)
+        self.inApp = try container.decode([AppStore.InAppPurchase].self, forKey: .inApp)
+        self.originalApplicationVersion = try container.decode(String.self, forKey: .originalApplicationVersion)
+        self.receiptCreationDate = try container.decodeAppStoreDate(forKey: .receiptCreationDate)
+        self.receiptExpirationDate = try container.decodeAppStoreDateIfPresent(forKey: .receiptExpirationDate)
+    }
+}
+
+extension AppStore.InAppPurchase {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.quantity = try container.decode(String.self, forKey: .quantity)
+        self.productId = try container.decode(String.self, forKey: .productId)
+        self.transactionId = try container.decode(String.self, forKey: .transactionId)
+        self.originalTransactionId = try container.decode(String.self, forKey: .originalTransactionId)
+        self.purchaseDate = try container.decodeAppStoreDate(forKey: .purchaseDate)
+        self.originalPurchaseDate = try container.decodeAppStoreDate(forKey: .originalPurchaseDate)
+        self.subscriptionExpirationDate = try container.decodeAppStoreDateIfPresent(forKey: .subscriptionExpirationDate)
+        self.subscriptionExpirationIntent = try container.decodeIfPresent(AppStore.SubscriptionExpirationIntent.self, forKey: .subscriptionExpirationIntent)
+        self.subscriptionRetryFlag = try container.decodeIfPresent(AppStore.SubscriptionRetryFlag.self, forKey: .subscriptionRetryFlag)
+        self.subscriptionTrialPeriod = try container.decodeIfPresent(AppStore.SubscriptionTrialPeriod.self, forKey: .subscriptionTrialPeriod)
+        self.subscriptionIsInIntroductoryPricePeriod = try container.decodeIfPresent(AppStore.SubscriptionIntroductoryPricePeriod.self, forKey: .subscriptionIsInIntroductoryPricePeriod)
+        self.subscriptionAutoRenewStatus = try container.decodeIfPresent(AppStore.SubscriptionAutoRenewStatus.self, forKey: .subscriptionAutoRenewStatus)
+        self.subscriptionAutoRenewPreface = try container.decodeIfPresent(String.self, forKey: .subscriptionAutoRenewPreface)
+        self.subscriptionPriceConsentStatus = try container.decodeIfPresent(AppStore.SubscriptionPriceConsentStatus.self, forKey: .subscriptionPriceConsentStatus)
+        self.cancellationDate = try container.decodeAppStoreDateIfPresent(forKey: .cancellationDate)
+        self.cancellationReason = try container.decodeIfPresent(AppStore.CancellationReason.self, forKey: .cancellationReason)
+        self.appItemId = try container.decodeIfPresent(String.self, forKey: .appItemId)
+        self.externalVersionIdentifier = try container.decodeIfPresent(String.self, forKey: .externalVersionIdentifier)
+        self.webOrderLineItemId = try container.decodeIfPresent(String.self, forKey: .webOrderLineItemId)
+    }
+}
+
+extension KeyedDecodingContainer {
+    func decodeAppStoreDate(forKey key: K) throws -> Date {
+        let string = try self.decode(String.self, forKey: key)
+
+        guard let timeIntervalSince1970inMs = Double(string) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: self,
+                debugDescription: "Expected to have a TimeInterval in ms within the string to decode a date."
+            )
+        }
+
+        return Date(timeIntervalSince1970: timeIntervalSince1970inMs / 1000)
+    }
+
+    func decodeAppStoreDateIfPresent(forKey key: K) throws -> Date? {
+        guard let string = try self.decodeIfPresent(String.self, forKey: key) else {
+            return nil
+        }
+
+        guard let timeIntervalSince1970inMs = Double(string) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: self,
+                debugDescription: "Expected to have a TimeInterval in ms within the string to decode a date."
+            )
+        }
+
+        return Date(timeIntervalSince1970: timeIntervalSince1970inMs / 1000)
     }
 }

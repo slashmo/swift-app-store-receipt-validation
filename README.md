@@ -45,7 +45,7 @@ To verify an AppStore Receipt in your code you need to create an `HTTPClient` fi
 let httpClient = HTTPClient(eventLoopGroupProvider: .createNew)
 defer { try? httpClient.syncShutdown() }
 
-let appStoreClient = AppStoreClient(httpClient: httpClient, secret: "abc123")
+let appStoreClient = AppStore.Client(httpClient: httpClient, secret: "abc123")
 
 let base64EncodedReceipt: String = ...
 let receipt = try appStoreClient.validateReceipt(base64EncodedReceipt).wait()

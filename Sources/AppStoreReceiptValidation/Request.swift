@@ -1,5 +1,21 @@
 
-extension AppStoreClient {
+extension AppStore {
+    enum Environment: String, Codable {
+        case sandbox = "Sandbox"
+        case production = "Production"
+
+        var url: String {
+            switch self {
+            case .sandbox:
+                return "https://sandbox.itunes.apple.com/verifyReceipt"
+            case .production:
+                return "https://buy.itunes.apple.com/verifyReceipt"
+            }
+        }
+    }
+}
+
+extension AppStore {
     struct Request: Codable {
         let receiptData: String
         let password: String?
@@ -13,7 +29,7 @@ extension AppStoreClient {
     }
 }
 
-extension AppStoreClient {
+extension AppStore {
     struct Status: Codable {
         let status: Int
     }
