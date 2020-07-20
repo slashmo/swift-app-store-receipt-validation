@@ -8,21 +8,30 @@ on:
     - master
 
 jobs:
+
+  "sanity-Tests":
+    runs-on: macOS-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install swiftformat
+      run: brew install swiftformat
+    - name: Run sanity
+      run: ./scripts/sanity.sh .
+
   "tuxOS-Tests":
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tag: ['5.1']
+        images:
+        - swift:5.1
+        - swift:5.2
+        - swiftlang/swift:nightly-5.3-bionic
     container:
-      image: swift:${{ matrix.tag }}
-      volumes:
-      - $GITHUB_WORKSPACE:/src
-      options: --workdir /src
+      image: ${{ matrix.images }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
+      uses: actions/checkout@v2
     - name: Install dependencies
       run: apt-get update && apt-get install -y zlib1g-dev zip openssl libssl-dev
     - name: Test
@@ -30,29 +39,31 @@ jobs:
     - name: Convert coverage files
       run: llvm-cov export -format="lcov" .build/debug/swift-app-store-receipt-validationPackageTests.xctest -instr-profile .build/debug/codecov/default.profdata > info.lcov
     - name: Upload to codecov.io
-      uses: codecov/codecov-action@v1.0.3
+      uses: codecov/codecov-action@v1
       with:
-        token: ${{secrets.CODECOV_TOKEN}}
+        file: info.lcov
 
   "macOS-Tests":
     runs-on: macOS-latest
+    strategy:
+      matrix:
+        xcode:
+        - Xcode_11.1.app
+        - Xcode_11.6.app
+        - Xcode_12.app
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
+      uses: actions/checkout@v2
     - name: Show all Xcode versions
       run: ls -an /Applications/ | grep Xcode*
     - name: Change Xcode command line tools
       run: sudo xcode-select -s /Applications/Xcode_11.2.app/Contents/Developer
-    - name: SPM Build
-      run: swift build
-    - name: SPM Tests
-      run: swift test --parallel -Xswiftc -DDEBUG
+    - name: Swift version
+      run: swift --version
     - name: Xcode Tests
       run: |
         swift package generate-xcodeproj
         xcodebuild -quiet -parallel-testing-enabled YES -scheme swift-app-store-receipt-validation-Package -enableCodeCoverage YES build test
     - name: Codecov
-      run: bash <(curl -s https://codecov.io/bash) -J 'AppStoreReceiptValidation' -t ${{secrets.CODECOV_TOKEN}}
+      run: bash <(curl -s https://codecov.io/bash) -t ${{secrets.CODECOV_TOKEN}} -f *.coverage.txt
 
