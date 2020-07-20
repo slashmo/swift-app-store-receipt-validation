@@ -1,5 +1,3 @@
-import Foundation
-import NIO
 
 extension AppStoreClient {
     struct Request: Codable {

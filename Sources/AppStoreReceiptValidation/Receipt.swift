@@ -1,4 +1,4 @@
-import Foundation
+import struct Foundation.Date
 
 extension AppStoreClient {
     enum Environment: String, Codable {

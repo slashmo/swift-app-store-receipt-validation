@@ -28,7 +28,7 @@ public struct AppStoreClient {
         self.secret = secret
     }
 
-    public func validateReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil)
+    public func validateReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil, on eventLoop: EventLoop)
         -> EventLoopFuture<Receipt> {
         let request = Request(
             receiptData: receipt,
@@ -36,14 +36,14 @@ public struct AppStoreClient {
             excludeOldTransactions: excludeOldTransactions
         )
 
-        return executeRequest(request, in: .production)
+        return executeRequest(request, in: .production, on: eventLoop)
             .flatMapError { (error) -> EventLoopFuture<AppStoreClient.Response> in
                 switch error {
                 case Error.receiptIsFromTestEnvironmentButWasSentToProductionEnvironment:
-                    return self.executeRequest(request, in: .sandbox)
+                    return self.executeRequest(request, in: .sandbox, on: eventLoop)
                 default:
                     // TBD: This doesn't look good. Maybe we keep the eventLoopGroup for ourselfs?
-                    return self.httpClient.eventLoopGroup.next().makeFailedFuture(error)
+                    return eventLoop.makeFailedFuture(error)
                 }
             }
             .map { (response) -> (Receipt) in
@@ -51,11 +51,17 @@ public struct AppStoreClient {
             }
     }
 
-    private func executeRequest(_ request: Request, in environment: Environment)
+    private func executeRequest(_ request: Request, in environment: Environment, on eventLoop: EventLoop)
         -> EventLoopFuture<Response> {
-        let buffer = try! encoder.encode(request, using: allocator)
-
-        return httpClient.post(url: environment.url, body: .byteBuffer(buffer), deadline: NIODeadline.now() + .seconds(5))
+        
+        return eventLoop.makeSucceededFuture(())
+            .flatMapThrowing { (_) -> HTTPClient.Request in
+                let buffer = try encoder.encode(request, using: allocator)
+                return try HTTPClient.Request(url: environment.url, method: .POST, body: .byteBuffer(buffer))
+            }
+            .flatMap { (request) -> EventLoopFuture<HTTPClient.Response> in
+                return httpClient.execute(request: request, eventLoop: .delegateAndChannel(on: eventLoop))
+            }
             .flatMapThrowing { (resp) throws -> (Response) in
                 let status = try self.decoder.decode(Status.self, from: resp.body!)
 
