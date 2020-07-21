@@ -2,7 +2,7 @@
 
 [![Swift 5.1](https://img.shields.io/badge/Swift-5.1-blue.svg)](https://swift.org/download/)
 [![github-actions](https://github.com/fabianfett/swift-aws-lambda/workflows/CI/badge.svg)](https://github.com/fabianfett/swift-aws-lambda/actions)
-[![codecov](https://codecov.io/gh/fabianfett/swift-app-store-receipt-validation/branch/master/graph/badge.svg)](https://codecov.io/gh/fabianfett/swift-app-store-receipt-validation)
+[![codecov](https://codecov.io/gh/fabianfett/swift-app-store-receipt-validation/branch/main/graph/badge.svg)](https://codecov.io/gh/fabianfett/swift-app-store-receipt-validation)
 
 This package implements the [validating receipts with the app store](https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW1) api.
 
