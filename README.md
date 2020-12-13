@@ -22,7 +22,7 @@ your project. For this open your `Package.swift` and add this to your dependenci
   dependencies: [
     .package(url: "https://github.com/swift-server/async-http-client", .upToNextMajor(from: "1.1.0")),
     .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.14.0")),
-    .package(url: "https://github.com/fabianfett/swift-app-store-receipt-validation", .upToNextMajor(from: "0.1.0")),
+    .package(url: "https://github.com/slashmo/swift-app-store-receipt-validation", .upToNextMajor(from: "0.1.0")),
   ]
 ```
   
