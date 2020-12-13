@@ -39,8 +39,12 @@ public enum AppStore {
             self.secret = secret
         }
 
-        public func validateReceipt(_ receipt: String, excludeOldTransactions: Bool? = nil, allocator: ByteBufferAllocator? = nil, on eventLoop: EventLoop? = nil)
-            -> EventLoopFuture<Receipt> {
+        public func validateReceipt(
+            _ receipt: String,
+            excludeOldTransactions: Bool? = nil,
+            allocator: ByteBufferAllocator? = nil,
+            on eventLoop: EventLoop? = nil
+        ) -> EventLoopFuture<Receipt> {
             let eventLoop = eventLoop ?? self.httpClient.eventLoopGroup.next()
             let allocator = allocator ?? self.allocator
 
@@ -65,8 +69,12 @@ public enum AppStore {
                 }
         }
 
-        private func executeRequest(_ request: Request, in environment: Environment, allocator: ByteBufferAllocator, on eventLoop: EventLoop)
-            -> EventLoopFuture<Response> {
+        private func executeRequest(
+            _ request: Request,
+            in environment: Environment,
+            allocator: ByteBufferAllocator,
+            on eventLoop: EventLoop
+        ) -> EventLoopFuture<Response> {
             return eventLoop.makeSucceededFuture(())
                 .flatMapThrowing { (_) -> HTTPClient.Request in
                     let buffer = try self.encoder.encodeAsByteBuffer(request, allocator: allocator)
