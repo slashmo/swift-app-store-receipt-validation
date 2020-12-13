@@ -26,7 +26,8 @@ jobs:
         images:
         - swift:5.1
         - swift:5.2
-        - swiftlang/swift:nightly-5.3-bionic
+        - swift:5.3
+        - swiftlang/swift:nightly-main-focal
     container:
       image: ${{ matrix.images }}
     steps:
@@ -48,16 +49,16 @@ jobs:
     strategy:
       matrix:
         xcode:
-        - Xcode_11.1.app
+        - Xcode_11.2.app
         - Xcode_11.6.app
-        - Xcode_12.app
+        - Xcode_12.3.app
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Show all Xcode versions
       run: ls -an /Applications/ | grep Xcode*
     - name: Change Xcode command line tools
-      run: sudo xcode-select -s /Applications/Xcode_11.2.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/${{ matrix.xcode }}/Contents/Developer
     - name: Swift version
       run: swift --version
     - name: Xcode Tests
@@ -65,5 +66,4 @@ jobs:
         swift package generate-xcodeproj
         xcodebuild -quiet -parallel-testing-enabled YES -scheme swift-app-store-receipt-validation-Package -enableCodeCoverage YES build test
     - name: Codecov
-      run: bash <(curl -s https://codecov.io/bash) -t ${{secrets.CODECOV_TOKEN}} -f *.coverage.txt
-
+      run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN}} -f *.coverage.txt
