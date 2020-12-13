@@ -1,7 +1,7 @@
 import struct Foundation.Date
 
-extension AppStore {
-    public enum Error: Swift.Error {
+public extension AppStore {
+    enum Error: Swift.Error {
         /// The App Store could not read the JSON object you provided.
         case invalidJSONObject
 
@@ -67,7 +67,7 @@ extension AppStore {
         }
     }
 
-    public struct Receipt: Codable {
+    struct Receipt: Codable {
         public let bundleId: String
         public let applicationVersion: String
         public let inApp: [InAppPurchase]
@@ -85,7 +85,7 @@ extension AppStore {
         }
     }
 
-    public struct InAppPurchase: Codable {
+    struct InAppPurchase: Codable {
         /// The number of items purchased.
         ///
         /// This value corresponds to the quantity property of the SKPayment object stored in the transaction’s payment property.
@@ -274,7 +274,7 @@ extension AppStore {
         }
     }
 
-    public enum SubscriptionExpirationIntent: String, Codable {
+    enum SubscriptionExpirationIntent: String, Codable {
         case customerCancelled = "1"
         case billingError = "2"
         case customerDidNotAgreeWithPriceIncrease = "3"
@@ -282,39 +282,39 @@ extension AppStore {
         case unknownError = "5"
     }
 
-    public enum SubscriptionRetryFlag: String, Codable {
+    enum SubscriptionRetryFlag: String, Codable {
         case appStoreStillAttemptingToRenewSubscription = "0"
         case appStoreHasStoppedAttemptingToRenewTheSubscription = "1"
     }
 
-    public enum SubscriptionTrialPeriod: String, Codable {
+    enum SubscriptionTrialPeriod: String, Codable {
         case isInFreeTrial = "true"
         case isNotInFreeTrial = "false"
     }
 
-    public enum SubscriptionIntroductoryPricePeriod: String, Codable {
+    enum SubscriptionIntroductoryPricePeriod: String, Codable {
         case isInIntroductoryPricePeriod = "true"
         case isNotInIntroductoryPricePeriod = "false"
     }
 
-    public enum SubscriptionAutoRenewStatus: String, Codable {
+    enum SubscriptionAutoRenewStatus: String, Codable {
         case customerHasTurnedOffAutomaticRenewal = "0"
         case willRenew = "1"
     }
 
-    public enum SubscriptionPriceConsentStatus: String, Codable {
+    enum SubscriptionPriceConsentStatus: String, Codable {
         case customerHasNotTakenAction = "0"
         case customerHasAgreedToPriceIncrease = "1"
     }
 
-    public enum CancellationReason: String, Codable {
+    enum CancellationReason: String, Codable {
         case actualOrPercivedIssueWithinTheApp = "1"
         case otherReason = "0"
     }
 }
 
-extension AppStore.Receipt {
-    public init(from decoder: Decoder) throws {
+public extension AppStore.Receipt {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.bundleId = try container.decode(String.self, forKey: .bundleId)
@@ -326,8 +326,8 @@ extension AppStore.Receipt {
     }
 }
 
-extension AppStore.InAppPurchase {
-    public init(from decoder: Decoder) throws {
+public extension AppStore.InAppPurchase {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.quantity = try container.decode(String.self, forKey: .quantity)
